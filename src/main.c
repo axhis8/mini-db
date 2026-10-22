@@ -1,145 +1,14 @@
-#include <stddef.h>
+#include "cmd.h"
+#include "db.h"
+#include "util.h"
 #include <stdio.h>
 #include <string.h>
-
-#define SIZE_DB 1024
-#define MAX_LEN_KEY 63
-#define MAX_LEN_VAL 63
-
-#define STR_(x) #x
-#define STR(x) STR_(x)
-
-typedef struct entry {
-    char key[MAX_LEN_KEY + 1];
-    char val[MAX_LEN_VAL + 1];
-} entry;
-
-static entry database[SIZE_DB];
-static int database_count = 0;
-
-static entry *entry_get(const char *key) {
-    for (int i = 0; i < database_count; i++) {
-        if (strcmp(database[i].key, key) == 0) return &database[i];
-    }
-
-    return NULL;
-}
-
-typedef int (*cmd_fn)(int argc, char **argv);
-
-typedef struct command {
-    const char *name;
-    cmd_fn fn;
-} command;
-
-static const char ERR_PRX[] = "error:";
-
-static int cmd_set(int argc, char **argv) {
-    if (argc < 3) {
-        fprintf(stderr, "%s missing arguments\n", ERR_PRX);
-        return 1;
-    }
-
-    entry *e = entry_get(argv[1]);
-
-    if (e != NULL) {
-        snprintf(e->val, sizeof(e->val), "%s", argv[2]);
-    }
-    else {
-        if (database_count >= SIZE_DB) {
-            fprintf(stderr, "%s database is full\n", ERR_PRX);
-            return 1;
-        }
-
-        e = &database[database_count];
-        database_count++;
-
-        snprintf(e->key, sizeof(e->key), "%s", argv[1]);
-        snprintf(e->val, sizeof(e->val), "%s", argv[2]);
-    }
-
-    return 0;
-}
-
-static int cmd_list(int argc, char **argv) {
-    (void)argc;
-    (void)argv;
-
-    size_t width = 0;
-    for (int i = 0; i < database_count; i++) {
-        size_t key_len = strlen(database[i].key);
-        if (key_len > width) width = key_len;
-    }
-
-    for (int i = 0; i < database_count; i++) {
-        printf("%4d. %-*s: %s\n", i + 1, (int)width, database[i].key,
-               database[i].val);
-    }
-
-    return 0;
-}
-
-static int cmd_get(int argc, char **argv) {
-    if (argc < 2) {
-        fprintf(stderr, "%s missing key\n", ERR_PRX);
-        return 1;
-    }
-
-    entry *e = entry_get(argv[1]);
-
-    if (e == NULL) {
-        fprintf(stderr, "%s key not found: %s\n", ERR_PRX, argv[1]);
-        return 1;
-    }
-
-    printf("%s\n", e->val);
-    return 0;
-}
-
-static int cmd_del(int argc, char **argv) {
-    if (argc < 2) {
-        fprintf(stderr, "%s missing key\n", ERR_PRX);
-        return 1;
-    }
-
-    entry *e = entry_get(argv[1]);
-
-    if (e == NULL) {
-        fprintf(stderr, "%s key not found: %s\n", ERR_PRX, argv[1]);
-        return 1;
-    }
-
-    ptrdiff_t i = e - database;
-    for (int j = i; j < database_count - 1; j++) {
-        database[j] = database[j + 1];
-    }
-
-    database_count--;
-    return 0;
-}
-
-static const command commands[] = {
-    {"set", cmd_set},
-    {"list", cmd_list},
-    {"get", cmd_get},
-    {"del", cmd_del},
-};
-
-static int run_command(int argc, char **argv) {
-    size_t count = sizeof(commands) / sizeof(commands[0]);
-    for (size_t i = 0; i < count; i++) {
-        if (strcmp(argv[0], commands[i].name) == 0)
-            return commands[i].fn(argc, argv);
-    }
-
-    fprintf(stderr, "%s command not found: %s\n", ERR_PRX, argv[0]);
-    return 1;
-}
 
 int main() {
     char input[150];
 
-    while (1) {
+    state s = CMD_OK;
+    while (s != CMD_END) {
         // Inputs & Handling
         printf("> ");
 
@@ -167,10 +36,9 @@ int main() {
                    cmd, key, val);
 
         if (n < 1) continue;
-        if (strcmp(cmd, "exit") == 0) break;
 
         // Command Running
-        run_command(n, args);
+        s = run_command(n, args);
     }
 
     return 0;
