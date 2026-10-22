@@ -47,7 +47,7 @@ static int cmd_set(int argc, char **argv) {
     }
     else {
         if (database_count >= SIZE_DB) {
-            fprintf(stderr, "%s database is full.\n", ERR_PRX);
+            fprintf(stderr, "%s database is full\n", ERR_PRX);
             return 1;
         }
 
@@ -61,10 +61,21 @@ static int cmd_set(int argc, char **argv) {
     return 0;
 }
 
-// TODO: List Data
 static int cmd_list(int argc, char **argv) {
     (void)argc;
     (void)argv;
+
+    size_t width = 0;
+    for (int i = 0; i < database_count; i++) {
+        size_t key_len = strlen(database[i].key);
+        if (key_len > width) width = key_len;
+    }
+
+    for (int i = 0; i < database_count; i++) {
+        printf("%4d. %-*s: %s\n", i + 1, (int)width, database[i].key,
+               database[i].val);
+    }
+
     return 0;
 }
 
