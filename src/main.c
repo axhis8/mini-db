@@ -96,10 +96,25 @@ static int cmd_get(int argc, char **argv) {
     return 0;
 }
 
-// TODO
-static int cmd_delete(int argc, char **argv) {
-    (void)argc;
-    (void)argv;
+static int cmd_del(int argc, char **argv) {
+    if (argc < 2) {
+        fprintf(stderr, "%s missing key\n", ERR_PRX);
+        return 1;
+    }
+
+    entry *e = entry_get(argv[1]);
+
+    if (e == NULL) {
+        fprintf(stderr, "%s key not found: %s\n", ERR_PRX, argv[1]);
+        return 1;
+    }
+
+    ptrdiff_t i = e - database;
+    for (int j = i; j < database_count - 1; j++) {
+        database[j] = database[j + 1];
+    }
+
+    database_count--;
     return 0;
 }
 
@@ -107,7 +122,7 @@ static const command commands[] = {
     {"set", cmd_set},
     {"list", cmd_list},
     {"get", cmd_get},
-    {"delete", cmd_delete},
+    {"del", cmd_del},
 };
 
 static int run_command(int argc, char **argv) {
