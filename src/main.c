@@ -17,7 +17,7 @@ typedef struct entry {
 static entry database[SIZE_DB];
 static int database_count = 0;
 
-static entry *data_get(const char *key) {
+static entry *entry_get(const char *key) {
     for (int i = 0; i < database_count; i++) {
         if (strcmp(database[i].key, key) == 0) return &database[i];
     }
@@ -40,7 +40,7 @@ static int cmd_set(int argc, char **argv) {
         return 1;
     }
 
-    entry *e = data_get(argv[1]);
+    entry *e = entry_get(argv[1]);
 
     if (e != NULL) {
         snprintf(e->val, sizeof(e->val), "%s", argv[2]);
@@ -79,9 +79,35 @@ static int cmd_list(int argc, char **argv) {
     return 0;
 }
 
+static int cmd_get(int argc, char **argv) {
+    if (argc < 2) {
+        fprintf(stderr, "%s missing key\n", ERR_PRX);
+        return 1;
+    }
+
+    entry *e = entry_get(argv[1]);
+
+    if (e == NULL) {
+        fprintf(stderr, "%s key not found: %s\n", ERR_PRX, argv[1]);
+        return 1;
+    }
+
+    printf("%s\n", e->val);
+    return 0;
+}
+
+// TODO
+static int cmd_delete(int argc, char **argv) {
+    (void)argc;
+    (void)argv;
+    return 0;
+}
+
 static const command commands[] = {
     {"set", cmd_set},
     {"list", cmd_list},
+    {"get", cmd_get},
+    {"delete", cmd_delete},
 };
 
 static int run_command(int argc, char **argv) {
