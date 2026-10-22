@@ -2,6 +2,29 @@
 #include <stdio.h>
 #include <string.h>
 
+#define SIZE_DB 1024
+#define MAX_LEN_KEY 63
+#define MAX_LEN_VAL 63
+
+#define STR_(x) #x
+#define STR(x) STR_(x)
+
+typedef struct entry {
+    char key[MAX_LEN_KEY + 1];
+    char val[MAX_LEN_VAL + 1];
+} entry;
+
+static entry database[SIZE_DB];
+static int database_count = 0;
+
+static entry *data_get(const char *key) {
+    for (int i = 0; i < database_count; i++) {
+        if (strcmp(database[i].key, key) == 0) return &database[i];
+    }
+
+    return NULL;
+}
+
 typedef int (*cmd_fn)(int argc, char **argv);
 
 typedef struct command {
@@ -67,10 +90,13 @@ int main() {
         input[strcspn(input, "\n")] = '\0';
 
         // Token Parsing
-        char cmd[16], key[64], val[64];
+        char cmd[16], key[MAX_LEN_KEY + 1], val[MAX_LEN_VAL + 1];
         char *args[3] = {cmd, key, val};
 
-        int n = sscanf(input, "%15s %63s %63s", cmd, key, val);
+        int n =
+            sscanf(input, "%15s %" STR(MAX_LEN_KEY) "s %" STR(MAX_LEN_VAL) "s",
+                   cmd, key, val);
+
         if (n < 1) continue;
         if (strcmp(cmd, "exit") == 0) break;
 

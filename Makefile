@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c11 -Iinclude -g
+CFLAGS = -Wall -Wextra -Iinclude -g
 
 SRC = $(wildcard src/*.c)
 BIN = bin/mini-db
