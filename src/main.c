@@ -34,11 +34,28 @@ typedef struct command {
 
 static const char ERR_PRX[] = "error:";
 
-// TODO: Set Data
 static int cmd_set(int argc, char **argv) {
     if (argc < 3) {
-        fprintf(stderr, "%s missing arguments.\n", ERR_PRX);
+        fprintf(stderr, "%s missing arguments\n", ERR_PRX);
         return 1;
+    }
+
+    entry *e = data_get(argv[1]);
+
+    if (e != NULL) {
+        snprintf(e->val, sizeof(e->val), "%s", argv[2]);
+    }
+    else {
+        if (database_count >= SIZE_DB) {
+            fprintf(stderr, "%s database is full.\n", ERR_PRX);
+            return 1;
+        }
+
+        e = &database[database_count];
+        database_count++;
+
+        snprintf(e->key, sizeof(e->key), "%s", argv[1]);
+        snprintf(e->val, sizeof(e->val), "%s", argv[2]);
     }
 
     return 0;
@@ -83,7 +100,7 @@ int main() {
             int c;
             while ((c = getchar()) != '\n' && c != EOF) {}
 
-            fprintf(stderr, "%s input too large.\n", ERR_PRX);
+            fprintf(stderr, "%s input too large\n", ERR_PRX);
             continue;
         }
 
