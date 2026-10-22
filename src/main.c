@@ -1,10 +1,51 @@
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 
+typedef int (*cmd_fn)(int argc, char **argv);
+
+typedef struct command {
+    const char *name;
+    cmd_fn fn;
+} command;
+
 static const char ERR_PRX[] = "error:";
 
+// TODO: Set Data
+static int cmd_set(int argc, char **argv) {
+    if (argc < 3) {
+        fprintf(stderr, "%s missing arguments.\n", ERR_PRX);
+        return 1;
+    }
+
+    return 0;
+}
+
+// TODO: List Data
+static int cmd_list(int argc, char **argv) {
+    (void)argc;
+    (void)argv;
+    return 0;
+}
+
+static const command commands[] = {
+    {"set", cmd_set},
+    {"list", cmd_list},
+};
+
+static int run_command(int argc, char **argv) {
+    size_t count = sizeof(commands) / sizeof(commands[0]);
+    for (size_t i = 0; i < count; i++) {
+        if (strcmp(argv[0], commands[i].name) == 0)
+            return commands[i].fn(argc, argv);
+    }
+
+    fprintf(stderr, "%s command not found: %s\n", ERR_PRX, argv[0]);
+    return 1;
+}
+
 int main() {
-    char input[100];
+    char input[150];
 
     while (1) {
         // Inputs & Handling
@@ -27,21 +68,14 @@ int main() {
 
         // Token Parsing
         char cmd[16], key[64], val[64];
-        int n = sscanf(input, "%15s %63s %63s", cmd, key, val);
+        char *args[3] = {cmd, key, val};
 
-        if (strcmp(cmd, "") == 0) {
-            continue;
-        }
-        else if (strcmp(cmd, "exit") == 0) {
-            break;
-        }
-        else if (strcmp(cmd, "list") == 0) {}
-        else if (strcmp(cmd, "set") == 0) {
-            if (n < 3) fprintf(stderr, "%s missing arguments.\n", ERR_PRX);
-        }
-        else {
-            fprintf(stderr, "%s command not found: %s\n", ERR_PRX, cmd);
-        }
+        int n = sscanf(input, "%15s %63s %63s", cmd, key, val);
+        if (n < 1) continue;
+        if (strcmp(cmd, "exit") == 0) break;
+
+        // Command Running
+        run_command(n, args);
     }
 
     return 0;
