@@ -61,7 +61,7 @@ static state cmd_set(int argc, char **argv) {
         snprintf(e->val, sizeof(e->val), "%s", argv[2]);
     }
 
-    return CMD_OK;
+    return CMD_CHANGED;
 }
 
 static state cmd_get(int argc, char **argv) {
@@ -100,7 +100,7 @@ static state cmd_del(int argc, char **argv) {
     }
 
     database_count--;
-    return CMD_OK;
+    return CMD_CHANGED;
 }
 
 static const command commands[] = {

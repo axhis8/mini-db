@@ -1,7 +1,9 @@
 #ifndef CMD_H
 #define CMD_H
 
-typedef enum state { CMD_OK = 0, CMD_ERR, CMD_END } state;
+#define MAX_INPUT_LEN 150
+
+typedef enum state { CMD_ERR = -1, CMD_OK, CMD_CHANGED, CMD_END } state;
 
 state parse_command(const char *input);
 
