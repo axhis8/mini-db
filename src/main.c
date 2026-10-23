@@ -1,5 +1,4 @@
 #include "cmd.h"
-#include "db.h"
 #include "util.h"
 #include <stdio.h>
 #include <string.h>
@@ -27,18 +26,7 @@ int main() {
 
         input[strcspn(input, "\n")] = '\0';
 
-        // Token Parsing
-        char cmd[16], key[MAX_LEN_KEY + 1], val[MAX_LEN_VAL + 1];
-        char *args[3] = {cmd, key, val};
-
-        int n =
-            sscanf(input, "%15s %" STR(MAX_LEN_KEY) "s %" STR(MAX_LEN_VAL) "s",
-                   cmd, key, val);
-
-        if (n < 1) continue;
-
-        // Command Running
-        s = run_command(n, args);
+        s = parse_command(input);
     }
 
     return 0;

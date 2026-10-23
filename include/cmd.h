@@ -3,6 +3,6 @@
 
 typedef enum state { CMD_OK = 0, CMD_ERR, CMD_END } state;
 
-state run_command(int argc, char **argv);
+state parse_command(const char *input);
 
 #endif

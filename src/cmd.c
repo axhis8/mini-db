@@ -108,7 +108,7 @@ static const command commands[] = {
     {"get", cmd_get},   {"del", cmd_del},
 };
 
-state run_command(int argc, char **argv) {
+static state run_command(int argc, char **argv) {
     size_t count = sizeof(commands) / sizeof(commands[0]);
     for (size_t i = 0; i < count; i++) {
         if (strcmp(argv[0], commands[i].name) == 0)
@@ -117,4 +117,16 @@ state run_command(int argc, char **argv) {
 
     fprintf(stderr, "%s command not found: %s\n", ERR_PRX, argv[0]);
     return CMD_ERR;
+}
+
+state parse_command(const char *input) {
+    char cmd[16], key[MAX_LEN_KEY + 1], val[MAX_LEN_VAL + 1];
+    char *args[3] = {cmd, key, val};
+
+    int n = sscanf(input, "%15s %" STR(MAX_LEN_KEY) "s %" STR(MAX_LEN_VAL) "s",
+                   cmd, key, val);
+
+    if (n < 1) return CMD_OK;
+
+    return run_command(n, args);
 }
