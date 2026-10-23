@@ -120,13 +120,20 @@ static state run_command(int argc, char **argv) {
 }
 
 state parse_command(const char *input) {
-    char cmd[16], key[MAX_LEN_KEY + 1], val[MAX_LEN_VAL + 1];
+    char cmd[MAX_INPUT_LEN], key[MAX_INPUT_LEN], val[MAX_INPUT_LEN];
     char *args[3] = {cmd, key, val};
 
-    int n = sscanf(input, "%15s %" STR(MAX_LEN_KEY) "s %" STR(MAX_LEN_VAL) "s",
-                   cmd, key, val);
-
+    int n = sscanf(input, "%s %s %s", cmd, key, val);
     if (n < 1) return CMD_OK;
+
+    if (n > 1 && strlen(key) > MAX_LEN_KEY) {
+        fprintf(stderr, "%s key too long\n", ERR_PRX);
+        return CMD_ERR;
+    }
+    if (n > 2 && strlen(val) > MAX_LEN_VAL) {
+        fprintf(stderr, "%s value too long\n", ERR_PRX);
+        return CMD_ERR;
+    }
 
     return run_command(n, args);
 }
